@@ -7,7 +7,8 @@ module multiplicador_4bits(
 	input [3:0] B_i,
 	input en_i,
 
-	output [7:0] Y_o
+	output [7:0] Y_o,
+	output [3:0] fsm_state_o
 );
 
 reg [7:0] A_reg;
@@ -18,12 +19,15 @@ multiplicador_state_t fsm_state;
 always @ (posedge clk_i, negedge rst_i) begin
 	if (!rst_i) begin
 		A_reg <= 8'b0;
-		B_reg <= 8'b0;
+		B_reg <= 4'b0;
 		Y_reg <= 8'b0;
 		fsm_state <= MULT_IDLE;
+
 	end else begin
 		case (fsm_state)
 		MULT_IDLE: begin
+			A_reg <= {4'b0, A_i};
+			B_reg <= B_i;
 			fsm_state <= en_i ? MULT_BIT_0 : MULT_IDLE;
 		end
 		
@@ -31,15 +35,11 @@ always @ (posedge clk_i, negedge rst_i) begin
 		MULT_BIT_1,
 		MULT_BIT_2,
 		MULT_BIT_3: begin
-			if (B_reg[0]) begin
-				Y_reg <= Y_reg + A_reg;
-				A_reg <= A_reg << 1;
-				B_reg <= B_reg >> 1;
-			end else begin
-				Y_reg <= Y_reg;
-				A_reg <= A_reg << 1;
-				B_reg <= B_reg >> 1;
-			end
+
+			Y_reg <= B_reg[0]? Y_reg + A_reg : Y_reg;
+			A_reg <= A_reg << 1;
+			B_reg <= B_reg >> 1;
+
 			if (fsm_state == MULT_BIT_0) fsm_state <= MULT_BIT_1;
 			else if (fsm_state == MULT_BIT_1) fsm_state <= MULT_BIT_2;
 			else if (fsm_state == MULT_BIT_2) fsm_state <= MULT_BIT_3;
@@ -47,7 +47,6 @@ always @ (posedge clk_i, negedge rst_i) begin
 		end
 		
 		MULT_END: begin
-			Y_reg <= Y_reg;
 			fsm_state <= MULT_END;
 		end
 		
@@ -56,5 +55,6 @@ always @ (posedge clk_i, negedge rst_i) begin
 end
 
 assign Y_o = Y_reg;
+assign fsm_state_o = fsm_state;
 
 endmodule

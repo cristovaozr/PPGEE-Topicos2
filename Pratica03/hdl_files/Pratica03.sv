@@ -42,11 +42,19 @@ module Pratica03(
 wire [3:0] A_wire;
 wire [3:0] B_wire;
 wire en_signal;
+wire key_0_debounce;
 wire key_1_debounce;
 
-debounce debounce_inst(
+czr_debounce debounce_key0_inst (
 	.clk_i(FPGA_CLK1_50),
-	.rst_i(KEY[0]),
+	.rst_i(1'b1),
+	.signal_i(KEY[0]),
+	.signal_o(key_0_debounce)
+);
+
+czr_debounce debounce_key1_inst (
+	.clk_i(FPGA_CLK1_50),
+	.rst_i(1'b1),
 	.signal_i(KEY[1]),
 	.signal_o(key_1_debounce)
 );
@@ -59,7 +67,8 @@ controle_entrada controle_entrada_int(
 	
 	.compute_o(en_signal),
 	.A_o(A_wire),
-	.B_o(B_wire)
+	.B_o(B_wire),
+//	.fsm_state_o(ARDUINO_IO[1:0])
 );
 
 multiplicador_4bits mult_4bit_inst(
@@ -69,7 +78,13 @@ multiplicador_4bits mult_4bit_inst(
 	.B_i(B_wire),
 	.en_i(en_signal),
 
-	.Y_o(LED)
+	.Y_o(LED),
+	.fsm_state_o(ARDUINO_IO[2:0])
 );
+
+//assign ARDUINO_IO[0] = en_signal;
+
+//assign ARDUINO_IO[1:0] = {key_1_debounce, KEY[0]};
+//assign ARDUINO_IO[1:0] = KEY[1:0];
 
 endmodule

@@ -3,12 +3,13 @@
 module controle_entrada(
 	input clk_i,
 	input rst_i,
-	input load_i,
+	input load_i,			// Active low!
 	input [3:0] input_i,
 
 	output compute_o,
 	output [3:0] A_o,
-	output [3:0] B_o
+	output [3:0] B_o,
+	output [1:0] fsm_state_o	// For debugging purposes!
 );
 
 reg [3:0] A_reg;
@@ -33,7 +34,7 @@ always @ (posedge clk_i, negedge rst_i) begin
 		LOADER_LOAD_A: begin
 			A_reg <= input_i;
 			B_reg <= B_reg;
-			fsm_state <= !load_i ? LOADER_LOAD_B : LOADER_LOAD_A;
+			fsm_state <= load_i ? LOADER_LOAD_B : LOADER_LOAD_A;
 			compute_reg <= 1'b0;
 		end
 		
@@ -58,5 +59,6 @@ end
 assign A_o = A_reg;
 assign B_o = B_reg;
 assign compute_o = compute_reg;
+assign fsm_state_o = fsm_state;
 
 endmodule

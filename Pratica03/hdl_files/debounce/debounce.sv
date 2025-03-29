@@ -3,7 +3,7 @@
 
 module debounce
     #(               
-        parameter  TIME_DEBOUCE = `CONTA_1S
+        parameter  TIME_DEBOUNCE = `CONTA_1S
     )
 	 (
     //common signal
@@ -59,7 +59,7 @@ debounce_controler debounce_controler_inst
     .state_o       (state_w)
 );
 
-assign end_delay_w = (contador_o_w >= TIME_DEBOUCE)? 1'b1: 1'b0;
+assign end_delay_w = (contador_o_w >= TIME_DEBOUNCE)? 1'b1: 1'b0;
 
 //Sinal de saida 
 assign signal_o = (state_w == ST_DB_END)? 1'b1: 1'b0;
