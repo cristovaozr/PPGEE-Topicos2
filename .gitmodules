@@ -1,0 +1,6 @@
+[submodule "tc2_fpga_pds"]
+	path = tc2_fpga_pds
+	url = git@github.com:LAB-PDS/tc2_fpga_pds.git
+[submodule "Default"]
+	path = Default
+	url = git@github.com:cristovaozr/DE10Nano-Default.git
