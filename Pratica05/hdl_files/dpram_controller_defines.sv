@@ -1,0 +1,16 @@
+// Definiçao da maquina de estados de controle do Controller
+
+typedef enum logic[3:0] {
+	DPRAM_CONTROL_IDLE,
+	DPRAM_CONTROL_READ_AB,
+	DPRAM_CONTROL_ENABLE_MULT,
+	DPRAM_CONTROL_WAIT_FOR_RESULT,
+	DPRAM_CONTROL_STORE_Y,
+	DPRAM_CONTROL_SIGNAL_STATUS_1,
+	DPRAM_CONTROL_WAIT_FOR_CONTROL_CLEAR,
+} dpram_controller_state_e;
+
+`define	DPRAM_CONTROL_ADDR	4'b0000
+`define	DPRAM_DATA_IN_ADDR	4'b0100
+`define	DPRAM_DATA_OUT_ADDR	4'b1000
+`define	DPRAM_STATUS_ADDR		4'b1100

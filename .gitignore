@@ -5,3 +5,6 @@ incremental_db/
 *.qsf
 *.qws
 *pin_model_dump.txt
+
+# Saídas para código em C
+*.o
