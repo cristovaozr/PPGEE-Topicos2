@@ -7,8 +7,7 @@
    <irq preferredWidth="63" />
   </columns>
  </systemtable>
- <library
-   expandedCategories="Project,Library/Basic Functions,Library,Library/Basic Functions/On Chip Memory" />
+ <library expandedCategories="Project/System,Library,Project" />
  <window width="1820" height="935" x="0" y="69" />
  <hdlexample language="VERILOG" />
 </preferences>

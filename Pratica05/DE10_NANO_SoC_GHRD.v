@@ -196,25 +196,57 @@ soc_system u0(
                .hps_0_f2h_stm_hw_events_stm_hwevents(stm_hw_events),        //        hps_0_f2h_stm_hw_events.stm_hwevents
                .hps_0_f2h_warm_reset_req_reset_n(~hps_warm_reset),          //       hps_0_f2h_warm_reset_req.reset_n
 					
-					.dualport_ram_clk2_clk                 (fpga_clk_50),       //              dualport_ram_clk2.clk
-					.dualport_ram_reset2_reset             (hps_fpga_reset_n),  //            dualport_ram_reset2.reset
-					.dualport_ram_reset2_reset_req         (),						//                               .reset_req
-					.dualport_ram_s2_address               (),               	//                dualport_ram_s2.address
-					.dualport_ram_s2_chipselect            (1'b1),            	//                               .chipselect
-					.dualport_ram_s2_clken                 (1'b1),              //                               .clken
-					.dualport_ram_s2_write                 (),                 	//                               .write
-					.dualport_ram_s2_readdata              (),              		//                               .readdata
-					.dualport_ram_s2_writedata             (),             		//                               .writedata
-					.dualport_ram_s2_byteenable            (4'b1111),           //                               .byteenable
+					.dualport_ram_clk2_clk                 (fpga_clk_50),        //              dualport_ram_clk2.clk
+					.dualport_ram_reset2_reset             (hps_fpga_reset_n),   //            dualport_ram_reset2.reset
+					.dualport_ram_reset2_reset_req         (),						 //                               .reset_req
+					.dualport_ram_s2_address               (dpram_s2_addr),      //                dualport_ram_s2.address
+					.dualport_ram_s2_chipselect            (1'b1),            	 //                               .chipselect
+					.dualport_ram_s2_clken                 (1'b1),               //                               .clken
+					.dualport_ram_s2_write                 (dpram_s2_write_en),  //                               .write
+					.dualport_ram_s2_readdata              (dpram_s2_readdata),  //                               .readdata
+					.dualport_ram_s2_writedata             (dpram_s2_writedata), //                               .writedata
+					.dualport_ram_s2_byteenable            (4'b1111),            //                               .byteenable
            );
 
 // CZR - Sinais de controle da DPRAM
-wire dpram_s2_addr;
-wire dpram_s2_clken;
+wire [31:0] dpram_s2_addr;
 wire dpram_s2_write_en;
-wire dpram_s2_readdata;
-wire dpram_s2_writedata;
-			  
+wire [31:0] dpram_s2_readdata;
+wire [31:0] dpram_s2_writedata;
+wire start_calculation;
+wire end_calculation;
+wire [7:0] mult_Y_output;
+wire [7:0] control_output;
+
+assign dpram_s2_writedata = {24'b0, mult_Y_output};
+
+dpram_controller dpram_controller_inst
+(
+	// Common signal
+	.clk_i(fpga_clk_50),
+	.rst_i_n(hps_fpga_reset_n),
+
+	// DPRAM S2 control signals
+	.dpram_s2_addr_o(dpram_s2_addr),
+	.dpram_s2_write_en_o(dpram_s2_write_en),
+	.start_calculation_o(start_calculation),
+	
+	.dpram_readdata_i(dpram_s2_readdata[7:0]),
+	.dpram_writedata_o(control_output)
+);
+
+multiplicador_4bits multiplicador_4bits_inst
+(
+	.clk_i(fpga_clk_50),
+	.rst_i(hps_fpga_reset_n),
+	.A_i(dpram_s2_readdata[3:0]),
+	.B_i(dpram_s2_readdata[7:4]),
+	.en_i(start_calculation),
+
+	.Y_o(mult_Y_output),
+	.done_o(end_calculation)
+);
+
 // Debounce logic to clean out glitches within 1ms
 debounce debounce_inst(
              .clk(fpga_clk_50),

@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
-#include "hwlib.h"
+#include "hwlib.h"j
 #include "socal.h"
 #include "hps.h"
 #include "alt_gpio.h"
@@ -21,9 +21,9 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/shm.h> 
-#include <time.h> 
-#include <math.h> 
+#include <sys/shm.h>
+#include <time.h>
+#include <math.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
@@ -59,10 +59,10 @@ static uint32_t calculate_mult4(peripheral *dpram, uint32_t A, uint32_t B)
 
     // Reinicia o periférico de produto
     peripheral_write8(*dpra, CONTROL_REGISTER_ADDR, 0x00);
-    
+
     // Escreve os registradores A e B
     peripheral_write8(*dpram, DATA_IN_REGISTER_ADDR, (B<<4) | A);
-    
+
     // Inicia o cálculo do produto de A e B
     peripheral_write8(*dpram, CONTROL_REGISTER_ADDR, 0x01);
 
