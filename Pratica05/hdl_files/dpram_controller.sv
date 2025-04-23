@@ -14,74 +14,106 @@ module dpram_controller(
 	input end_calculation_i,
 	
 	input [7:0] dpram_readdata_i,
-	output [7:0] dpram_writedata_o
+	output [7:0] dpram_writedata_o,
+	
+	output [2:0] dpram_fsm_state_o,
+	output select_mult_status_o
 );
 
 dpram_controller_state_e fsm_state, next_state;
+//reg start_calculation_r;
+//reg [7:0] dpram_writedata_r;
+//reg [1:0] dpram_s2_addr_r;
 
 always @ (posedge clk_i, negedge rst_i_n)
 begin
-//	if (!rst_i_n) begin
-//		fsm_state <= DPRAM_CONTROL_IDLE;
-//		next_state <= DPRAM_CONTROL_IDLE;
-//
-//	end else begin
-//		fsm_state <= next_state;
-//	end
+	if (!rst_i_n) begin
+		fsm_state <= DPRAM_CONTROL_IDLE;
+
+	end else begin
+		fsm_state <= next_state;
+	end
 end
 
 always @ (fsm_state, next_state)
 begin
-
 	case (fsm_state)
 	DPRAM_CONTROL_IDLE: begin
+		start_calculation_o <= 1'b0;
 		dpram_s2_addr_o <= `DPRAM_CONTROL_ADDR;
-		dpram_writedata_o <= dpram_writedata_o;
-		// If CONTROL[0] is HIGH, goto next state
+		dpram_s2_write_en_o <= 1'b0;
+		dpram_writedata_o <= 8'b0;
+		select_mult_status_o <= 1'b0;
 		next_state <= dpram_readdata_i[0] ? DPRAM_CONTROL_READ_AB : DPRAM_CONTROL_IDLE;
 	end
 
 	DPRAM_CONTROL_READ_AB: begin
+		start_calculation_o <= 1'b0;
 		dpram_s2_addr_o <= `DPRAM_DATA_IN_ADDR;
-		dpram_writedata_o <= dpram_writedata_o;
+		dpram_s2_write_en_o <= 1'b0;
+		dpram_writedata_o <= 8'b0;
+		select_mult_status_o <= 1'b0;
 		next_state <= DPRAM_CONTROL_ENABLE_MULT;
 	end
 
 	DPRAM_CONTROL_ENABLE_MULT: begin
 		start_calculation_o <= 1'b1;
-		dpram_writedata_o <= dpram_writedata_o;
-		dpram_s2_addr_o <= dpram_s2_addr_o;
+		dpram_s2_addr_o <= `DPRAM_DATA_IN_ADDR;
+		dpram_s2_write_en_o <= 1'b0;
+		dpram_writedata_o <= 8'b0;
+		select_mult_status_o <= 1'b0;
 		next_state <= DPRAM_CONTROL_WAIT_FOR_RESULT;
 	end
 
 	DPRAM_CONTROL_WAIT_FOR_RESULT: begin
-		dpram_writedata_o <= dpram_writedata_o;
-		dpram_s2_addr_o <= dpram_s2_addr_o;
+		start_calculation_o <= 1'b1;
+		dpram_s2_addr_o <= `DPRAM_DATA_IN_ADDR;
+		dpram_s2_write_en_o <= 1'b0;
+		dpram_writedata_o <= 8'b0;
+		select_mult_status_o <= 1'b0;
 		next_state <= end_calculation_i ? DPRAM_CONTROL_STORE_Y : DPRAM_CONTROL_WAIT_FOR_RESULT;
 	end
 
 	DPRAM_CONTROL_STORE_Y: begin
+		start_calculation_o <= 1'b1;
 		dpram_s2_addr_o <= `DPRAM_DATA_OUT_ADDR;
 		dpram_s2_write_en_o <= 1'b1;
+		dpram_writedata_o <= 8'b0;
+		select_mult_status_o <= 1'b0;
 		next_state <= DPRAM_CONTROL_SIGNAL_STATUS_1;
-		dpram_writedata_o <= dpram_writedata_o;
 	end
 
 	DPRAM_CONTROL_SIGNAL_STATUS_1: begin
+		start_calculation_o <= 1'b1;
 		dpram_s2_addr_o <= `DPRAM_STATUS_ADDR;
+		dpram_s2_write_en_o <= 1'b1;
 		dpram_writedata_o <= 8'b1;
+		select_mult_status_o <= 1'b1;
 		next_state <= DPRAM_CONTROL_WAIT_FOR_CONTROL_CLEAR;
 	end
 
 	DPRAM_CONTROL_WAIT_FOR_CONTROL_CLEAR: begin
+		start_calculation_o <= 1'b1;
 		dpram_s2_addr_o <= `DPRAM_CONTROL_ADDR;
-		// If CONTROL[0] is LOW, goto next state
+		dpram_s2_write_en_o <= 1'b0;
+		dpram_writedata_o <= 8'b0;
+		select_mult_status_o <= 1'b0;
 		next_state <= !dpram_readdata_i[0] ? DPRAM_CONTROL_IDLE : DPRAM_CONTROL_WAIT_FOR_CONTROL_CLEAR;
-		dpram_writedata_o <= dpram_writedata_o;
 	end
 
+	default: begin
+		dpram_s2_addr_o <= `DPRAM_CONTROL_ADDR;
+		next_state <= DPRAM_CONTROL_IDLE;
+	end
+	
 	endcase
 
 end
+
+//assign start_calculation_o = start_calculation_r;
+//assign dpram_writedata_o = dpram_writedata_r;
+//assign dpram_s2_addr_o = dpram_s2_addr_r;
+
+assign dpram_fsm_state_o = fsm_state;
 
 endmodule

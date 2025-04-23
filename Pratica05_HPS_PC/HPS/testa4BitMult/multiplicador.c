@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
-#include "hwlib.h"j
+#include "hwlib.h"
 #include "socal.h"
 #include "hps.h"
 #include "alt_gpio.h"
@@ -58,7 +58,7 @@ static uint32_t calculate_mult4(peripheral *dpram, uint32_t A, uint32_t B)
     B &= 0x0f;
 
     // Reinicia o periférico de produto
-    peripheral_write8(*dpra, CONTROL_REGISTER_ADDR, 0x00);
+    peripheral_write8(*dpram, CONTROL_REGISTER_ADDR, 0x00);
 
     // Escreve os registradores A e B
     peripheral_write8(*dpram, DATA_IN_REGISTER_ADDR, (B<<4) | A);
@@ -74,6 +74,10 @@ static uint32_t calculate_mult4(peripheral *dpram, uint32_t A, uint32_t B)
 
     // Lê o resultado
     uint32_t Y = peripheral_read8(*dpram, DATA_OUT_REGISTER_ADDR);
+
+    // Zera a solicitação de cálculo da multiplicação
+   peripheral_write8(*dpram, CONTROL_REGISTER_ADDR, 0x00);
+
     return Y;
 }
 
@@ -134,7 +138,7 @@ int main(int argc, char **argv)
         printf("Pacote recebido!\nMAGIC_NUMBER==[%.8x]\nA==[%u]\nB==[%u]\n", data_in.magic_number, data_in.A, data_in.B);
 
         data_out.magic_number = MAGIC_NUMBER;
-        data_out.Y = calculate_mult4(data_in.A, data_in.B);
+        data_out.Y = calculate_mult4(&dualPortRam, data_in.A, data_in.B);
 
         len = 0;
         do {
