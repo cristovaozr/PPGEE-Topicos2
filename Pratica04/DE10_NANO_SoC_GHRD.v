@@ -99,9 +99,9 @@ wire                hps_debug_reset;
 wire     [27: 0]    stm_hw_events;
 wire                fpga_clk_50;
 // connection of internal logics
-assign LED[7: 1] = fpga_led_internal;
+//assign LED[7: 1] = fpga_led_internal;
 assign fpga_clk_50 = FPGA_CLK1_50;
-assign stm_hw_events = {{15{1'b0}}, SW, fpga_led_internal, fpga_debounced_buttons};
+//assign stm_hw_events = {{15{1'b0}}, SW, fpga_led_internal, fpga_debounced_buttons};
 
 
 
@@ -196,84 +196,128 @@ soc_system u0(
                .hps_0_f2h_stm_hw_events_stm_hwevents(stm_hw_events),        //        hps_0_f2h_stm_hw_events.stm_hwevents
                .hps_0_f2h_warm_reset_req_reset_n(~hps_warm_reset),          //       hps_0_f2h_warm_reset_req.reset_n
 					
-					.dualport_ram_clk2_clk                 (),                 //              dualport_ram_clk2.clk
-					.dualport_ram_reset2_reset             (),             //            dualport_ram_reset2.reset
-					.dualport_ram_reset2_reset_req         (),         //                               .reset_req
-					.dualport_ram_s2_address               (),               //                dualport_ram_s2.address
-					.dualport_ram_s2_chipselect            (),            //                               .chipselect
-					.dualport_ram_s2_clken                 (),                 //                               .clken
-					.dualport_ram_s2_write                 (),                 //                               .write
-					.dualport_ram_s2_readdata              (),              //                               .readdata
-					.dualport_ram_s2_writedata             (),             //                               .writedata
-					.dualport_ram_s2_byteenable            (),            //                               .byteenable
-
+					.dualport_ram_clk2_clk                 (fpga_clk_50),        //              dualport_ram_clk2.clk
+					.dualport_ram_reset2_reset             (hps_fpga_reset_n),   //            dualport_ram_reset2.reset
+					.dualport_ram_reset2_reset_req         (),						 //                               .reset_req
+					.dualport_ram_s2_address               (dpram_s2_addr),      //                dualport_ram_s2.address
+					.dualport_ram_s2_chipselect            (1'b1),            	 //                               .chipselect
+					.dualport_ram_s2_clken                 (1'b1),               //                               .clken
+					.dualport_ram_s2_write                 (dpram_s2_write_en),  //                               .write
+					.dualport_ram_s2_readdata              (dpram_s2_readdata),  //                               .readdata
+					.dualport_ram_s2_writedata             (dpram_s2_writedata), //                               .writedata
+					.dualport_ram_s2_byteenable            (4'b1111),            //                               .byteenable
            );
 
+// CZR - Sinais de controle da DPRAM
+wire [31:0] dpram_s2_addr;
+wire dpram_s2_write_en;
+wire [31:0] dpram_s2_readdata;
+wire [31:0] dpram_s2_writedata;
+wire start_calculation;
+wire end_calculation;
+wire [7:0] mult_Y_output;
+wire [7:0] control_output;
+wire select_mult_status;
+
+assign dpram_s2_writedata = select_mult_status ? {24'b0, mult_Y_output} : {24'b0 , control_output};
+
+dpram_controller dpram_controller_inst
+(
+	// Common signal
+	.clk_i(fpga_clk_50),
+	.rst_i_n(hps_fpga_reset_n),
+
+	// DPRAM S2 control signals
+	.dpram_s2_addr_o(dpram_s2_addr),
+	.dpram_s2_write_en_o(dpram_s2_write_en),
+	.start_calculation_o(start_calculation),
+	
+	.dpram_readdata_i(dpram_s2_readdata[7:0]),
+	.dpram_writedata_o(control_output),
+	.select_mult_status_o(select_mult_status),
+	
+	.dpram_fsm_state_o(LED[2:0])
+);
+
+multiplicador_4bits multiplicador_4bits_inst
+(
+	.clk_i(fpga_clk_50),
+	.rst_i(hps_fpga_reset_n),
+	.A_i(dpram_s2_readdata[3:0]),
+	.B_i(dpram_s2_readdata[7:4]),
+	.en_i(start_calculation),
+
+	.Y_o(mult_Y_output),
+	.done_o(end_calculation)
+);
+
+
+
 // Debounce logic to clean out glitches within 1ms
-debounce debounce_inst(
-             .clk(fpga_clk_50),
-             .reset_n(hps_fpga_reset_n),
-             .data_in(KEY),
-             .data_out(fpga_debounced_buttons)
-         );
-defparam debounce_inst.WIDTH = 2;
-defparam debounce_inst.POLARITY = "LOW";
-defparam debounce_inst.TIMEOUT = 50000;               // at 50Mhz this is a debounce time of 1ms
-defparam debounce_inst.TIMEOUT_WIDTH = 16;            // ceil(log2(TIMEOUT))
-
-// Source/Probe megawizard instance
-hps_reset hps_reset_inst(
-              .source_clk(fpga_clk_50),
-              .source(hps_reset_req)
-          );
-
-altera_edge_detector pulse_cold_reset(
-                         .clk(fpga_clk_50),
-                         .rst_n(hps_fpga_reset_n),
-                         .signal_in(hps_reset_req[0]),
-                         .pulse_out(hps_cold_reset)
-                     );
-defparam pulse_cold_reset.PULSE_EXT = 6;
-defparam pulse_cold_reset.EDGE_TYPE = 1;
-defparam pulse_cold_reset.IGNORE_RST_WHILE_BUSY = 1;
-
-altera_edge_detector pulse_warm_reset(
-                         .clk(fpga_clk_50),
-                         .rst_n(hps_fpga_reset_n),
-                         .signal_in(hps_reset_req[1]),
-                         .pulse_out(hps_warm_reset)
-                     );
-defparam pulse_warm_reset.PULSE_EXT = 2;
-defparam pulse_warm_reset.EDGE_TYPE = 1;
-defparam pulse_warm_reset.IGNORE_RST_WHILE_BUSY = 1;
-
-altera_edge_detector pulse_debug_reset(
-                         .clk(fpga_clk_50),
-                         .rst_n(hps_fpga_reset_n),
-                         .signal_in(hps_reset_req[2]),
-                         .pulse_out(hps_debug_reset)
-                     );
-defparam pulse_debug_reset.PULSE_EXT = 32;
-defparam pulse_debug_reset.EDGE_TYPE = 1;
-defparam pulse_debug_reset.IGNORE_RST_WHILE_BUSY = 1;
-
-reg [25: 0] counter;
-reg led_level;
-always @(posedge fpga_clk_50 or negedge hps_fpga_reset_n) begin
-    if (~hps_fpga_reset_n) begin
-        counter <= 0;
-        led_level <= 0;
-    end
-
-    else if (counter == 24999999) begin
-        counter <= 0;
-        led_level <= ~led_level;
-    end
-    else
-        counter <= counter + 1'b1;
-end
-
-assign LED[0] = led_level;
+//debounce debounce_inst(
+//             .clk(fpga_clk_50),
+//             .reset_n(hps_fpga_reset_n),
+//             .data_in(KEY),
+//             .data_out(fpga_debounced_buttons)
+//         );
+//defparam debounce_inst.WIDTH = 2;
+//defparam debounce_inst.POLARITY = "LOW";
+//defparam debounce_inst.TIMEOUT = 50000;               // at 50Mhz this is a debounce time of 1ms
+//defparam debounce_inst.TIMEOUT_WIDTH = 16;            // ceil(log2(TIMEOUT))
+//
+//// Source/Probe megawizard instance
+//hps_reset hps_reset_inst(
+//              .source_clk(fpga_clk_50),
+//              .source(hps_reset_req)
+//          );
+//
+//altera_edge_detector pulse_cold_reset(
+//                         .clk(fpga_clk_50),
+//                         .rst_n(hps_fpga_reset_n),
+//                         .signal_in(hps_reset_req[0]),
+//                         .pulse_out(hps_cold_reset)
+//                     );
+//defparam pulse_cold_reset.PULSE_EXT = 6;
+//defparam pulse_cold_reset.EDGE_TYPE = 1;
+//defparam pulse_cold_reset.IGNORE_RST_WHILE_BUSY = 1;
+//
+//altera_edge_detector pulse_warm_reset(
+//                         .clk(fpga_clk_50),
+//                         .rst_n(hps_fpga_reset_n),
+//                         .signal_in(hps_reset_req[1]),
+//                         .pulse_out(hps_warm_reset)
+//                     );
+//defparam pulse_warm_reset.PULSE_EXT = 2;
+//defparam pulse_warm_reset.EDGE_TYPE = 1;
+//defparam pulse_warm_reset.IGNORE_RST_WHILE_BUSY = 1;
+//
+//altera_edge_detector pulse_debug_reset(
+//                         .clk(fpga_clk_50),
+//                         .rst_n(hps_fpga_reset_n),
+//                         .signal_in(hps_reset_req[2]),
+//                         .pulse_out(hps_debug_reset)
+//                     );
+//defparam pulse_debug_reset.PULSE_EXT = 32;
+//defparam pulse_debug_reset.EDGE_TYPE = 1;
+//defparam pulse_debug_reset.IGNORE_RST_WHILE_BUSY = 1;
+//
+//reg [25: 0] counter;
+//reg led_level;
+//always @(posedge fpga_clk_50 or negedge hps_fpga_reset_n) begin
+//    if (~hps_fpga_reset_n) begin
+//        counter <= 0;
+//        led_level <= 0;
+//    end
+//
+//    else if (counter == 24999999) begin
+//        counter <= 0;
+//        led_level <= ~led_level;
+//    end
+//    else
+//        counter <= counter + 1'b1;
+//end
+//
+//assign LED[0] = led_level;
 
 
 endmodule
