@@ -20,6 +20,7 @@ if __name__ == "__main__":
     print("Executando testbench para todos os números!")
     
     server_address   = ("192.168.26.2", 9090) 
+    # server_address   = ("192.168.88.108", 9090) 
     udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     
     passed = True    

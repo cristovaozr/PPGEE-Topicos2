@@ -1,0 +1,21 @@
+`ifndef DPRAM_DEFINES_SV_
+`define DPRAM_DEFINES_SV_
+
+typedef enum logic[3:0] {
+	ST_DPRAM_IDLE 						= 4'd1,
+	ST_DPRAM_READ_AB 					= 4'd2,
+	ST_DPRAM_START_MULTIPLICATION	= 4'd3,
+	ST_DPRAM_WAIT_FOR_RESULT 		= 4'd4,
+	ST_DPRAM_STORE_Y 					= 4'd5,
+	ST_DPRAM_UPDATE_STATUS_1 		= 4'd6,
+	ST_DPRAM_UPDATE_STATUS_2 		= 4'd7,
+	ST_DPRAM_WAIT_C0 					= 4'd8,
+	ST_DPRAM_CLEAR_STATUS 			= 4'd9
+} dpram_state_e;
+
+`define DPRAM_ADDR_CONTROL		0
+`define DPRAM_ADDR_DATA_IN		1
+`define DPRAM_ADDR_DATA_OUT	2
+`define DPRAM_ADDR_STATUS		3
+
+`endif

@@ -9,7 +9,7 @@ module multiplicador_4bits(
 
 	output [7:0] Y_o,
 	output done_o,
-	output [3:0] fsm_state_o
+	output [2:0] fsm_state_o
 );
 
 reg [7:0] A_reg;
@@ -32,6 +32,7 @@ always @ (posedge clk_i, negedge rst_i) begin
 			A_reg <= {4'b0, A_i};
 			B_reg <= B_i;
 			fsm_state <= en_i ? MULT_BIT_0 : MULT_IDLE;
+			done_reg <= 1'b0;
 		end
 		
 		MULT_BIT_0,
@@ -50,7 +51,7 @@ always @ (posedge clk_i, negedge rst_i) begin
 		end
 		
 		MULT_END: begin
-			fsm_state <= MULT_END;
+			fsm_state <= en_i ? MULT_END : MULT_IDLE;
 			done_reg <= 1'b1;
 		end
 		

@@ -21,9 +21,6 @@ module dpram_controller(
 );
 
 dpram_controller_state_e fsm_state, next_state;
-//reg start_calculation_r;
-//reg [7:0] dpram_writedata_r;
-//reg [1:0] dpram_s2_addr_r;
 
 always @ (posedge clk_i, negedge rst_i_n)
 begin
@@ -79,26 +76,26 @@ begin
 		dpram_s2_addr_o <= `DPRAM_DATA_OUT_ADDR;
 		dpram_s2_write_en_o <= 1'b1;
 		dpram_writedata_o <= 8'b0;
-		select_mult_status_o <= 1'b0;
+		select_mult_status_o <= 1'b1;
 		next_state <= DPRAM_CONTROL_SIGNAL_STATUS_1;
 	end
 
 	DPRAM_CONTROL_SIGNAL_STATUS_1: begin
-		start_calculation_o <= 1'b1;
+		start_calculation_o <= 1'b0;
 		dpram_s2_addr_o <= `DPRAM_STATUS_ADDR;
 		dpram_s2_write_en_o <= 1'b1;
-		dpram_writedata_o <= 8'b1;
-		select_mult_status_o <= 1'b1;
+		dpram_writedata_o <= 8'b11111111;
+		select_mult_status_o <= 1'b0;
 		next_state <= DPRAM_CONTROL_WAIT_FOR_CONTROL_CLEAR;
 	end
 
 	DPRAM_CONTROL_WAIT_FOR_CONTROL_CLEAR: begin
-		start_calculation_o <= 1'b1;
+		start_calculation_o <= 1'b0;
 		dpram_s2_addr_o <= `DPRAM_CONTROL_ADDR;
 		dpram_s2_write_en_o <= 1'b0;
 		dpram_writedata_o <= 8'b0;
 		select_mult_status_o <= 1'b0;
-		next_state <= !dpram_readdata_i[0] ? DPRAM_CONTROL_IDLE : DPRAM_CONTROL_WAIT_FOR_CONTROL_CLEAR;
+		next_state <= dpram_readdata_i[0] ? DPRAM_CONTROL_WAIT_FOR_CONTROL_CLEAR : DPRAM_CONTROL_IDLE;
 	end
 
 	default: begin
