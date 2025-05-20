@@ -237,19 +237,18 @@ wire [7:0] Y_w;
 wire en_w;
 wire calc_end_w;
 
-multiplicador_4bits multiplicador_4bits_inst(
+mult4bits mult4bits_inst(
 	// Common signals
 	.clk_i(fpga_clk_50),
-	.rst_i(hps_fpga_reset_n),
-//	.clk_i(slow_clk),
-//	.rst_i(local_rst_n_w),
-	// Interface
+	.rst_i_n(hps_fpga_reset_n),
+	// Controller signals
+	.en_i(en_w),
+	// Multiplier input
 	.A_i(A_w),
 	.B_i(B_w),
-	.en_i(en_w),
+	// Multiplier output
 	.Y_o(Y_w),
-	.done_o(calc_end_w),
-//	.fsm_state_o(LED[7:4])
+	.mult_done_o(calc_end_w)
 );
 
 assign LED = Y_w;
