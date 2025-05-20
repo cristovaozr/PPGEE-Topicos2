@@ -212,10 +212,10 @@ wire [31:0] dpram_s2_writedata;
 
 dpram dpram_instance(
 	// Common signals
-//	.clk_i(fpga_clk_50),
-//	.rst_i_n(hps_fpga_reset_n),
-	.clk_i(slow_clk),
-	.rst_i_n(local_rst_n_w),
+	.clk_i(fpga_clk_50),
+	.rst_i_n(hps_fpga_reset_n),
+//	.clk_i(slow_clk),
+//	.rst_i_n(local_rst_n_w),
 	// Avalon-MM interface
 	.write_o (dpram_s2_write_en),
 	.address_o(dpram_s2_addr),
@@ -228,7 +228,7 @@ dpram dpram_instance(
 	.Y_i(Y_w),
 	.calc_end_i(calc_end_w),
 	// Debug interface
-	.state_dbg(LED[3:0])
+//	.state_dbg(LED[3:0])
 );
 
 wire [3:0] A_w;
@@ -239,18 +239,20 @@ wire calc_end_w;
 
 multiplicador_4bits multiplicador_4bits_inst(
 	// Common signals
-//	.clk_i(fpga_clk_50),
-//	.rst_i(hps_fpga_reset_n),
-	.clk_i(slow_clk),
-	.rst_i(local_rst_n_w),
+	.clk_i(fpga_clk_50),
+	.rst_i(hps_fpga_reset_n),
+//	.clk_i(slow_clk),
+//	.rst_i(local_rst_n_w),
 	// Interface
 	.A_i(A_w),
 	.B_i(B_w),
 	.en_i(en_w),
 	.Y_o(Y_w),
 	.done_o(calc_end_w),
-	.fsm_state_o(LED[7:4])
+//	.fsm_state_o(LED[7:4])
 );
+
+assign LED = Y_w;
 
 reg [24:0] counter;
 reg slow_clk;

@@ -37,7 +37,7 @@
 #include "peripheral.h"
 
 #define PORT_1_MEM_BASE 0x40000
-#define PORT_1_ADDR_SPAN 2
+#define PORT_1_ADDR_SPAN 4
 #define PORT_1_MEM_SPAN PORT_1_ADDR_SPAN*32
 
 // Endereços de RAM para a Dual Port RAM
