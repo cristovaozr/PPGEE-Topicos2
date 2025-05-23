@@ -192,52 +192,34 @@ soc_system u0(
                .hps_0_f2h_stm_hw_events_stm_hwevents(stm_hw_events),        //        hps_0_f2h_stm_hw_events.stm_hwevents
                .hps_0_f2h_warm_reset_req_reset_n(~hps_warm_reset),          //       hps_0_f2h_warm_reset_req.reset_n
 					
-					.dualport_ram_clk2_clk                 (fpga_clk_50),        //              dualport_ram_clk2.clk
-					.dualport_ram_reset2_reset             (hps_fpga_reset_n),   //            dualport_ram_reset2.reset
-					.dualport_ram_reset2_reset_req         (),						 //                               .reset_req
-					.dualport_ram_s2_address               (dpram_s2_addr),      //                dualport_ram_s2.address
-					.dualport_ram_s2_chipselect            (1'b1),            	 //                               .chipselect
-					.dualport_ram_s2_clken                 (1'b1),               //                               .clken
-					.dualport_ram_s2_write                 (dpram_s2_write_en),  //                               .write
-					.dualport_ram_s2_readdata              (dpram_s2_readdata),  //                               .readdata
-					.dualport_ram_s2_writedata             (dpram_s2_writedata), //                               .writedata
-					.dualport_ram_s2_byteenable            (4'b1111),            //                               .byteenable
+//					.dualport_ram_clk2_clk                 (fpga_clk_50),        //              dualport_ram_clk2.clk
+//					.dualport_ram_reset2_reset             (hps_fpga_reset_n),   //            dualport_ram_reset2.reset
+//					.dualport_ram_reset2_reset_req         (),						 //                               .reset_req
+//					.dualport_ram_s2_address               (dpram_s2_addr),      //                dualport_ram_s2.address
+//					.dualport_ram_s2_chipselect            (1'b1),            	 //                               .chipselect
+//					.dualport_ram_s2_clken                 (1'b1),               //                               .clken
+//					.dualport_ram_s2_write                 (dpram_s2_write_en),  //                               .write
+//					.dualport_ram_s2_readdata              (dpram_s2_readdata),  //                               .readdata
+//					.dualport_ram_s2_writedata             (dpram_s2_writedata), //                               .writedata
+//					.dualport_ram_s2_byteenable            (4'b1111),            //                               .byteenable
 					
-					.avalon_mm_to_wishbone_bridge_0_wishbone_address      (),      // avalon_mm_to_wishbone_bridge_0_wishbone.address
-					.avalon_mm_to_wishbone_bridge_0_wishbone_datain       (),      //                                        .datain
-					.avalon_mm_to_wishbone_bridge_0_wishbone_dataout      (),		//                                        .dataout
-					.avalon_mm_to_wishbone_bridge_0_wishbone_writeenable  (),  		//                                        .writeenable
-					.avalon_mm_to_wishbone_bridge_0_wishbone_selectarray  (),  		//                                        .selectarray
-					.avalon_mm_to_wishbone_bridge_0_wishbone_strobeout    (),    	//                                        .strobeout
-					.avalon_mm_to_wishbone_bridge_0_wishbone_acknowledged	(),		//														.acknowledge
+					.avalon_mm_to_wishbone_bridge_0_wishbone_address      (wb_address_w),// avalon_mm_to_wishbone_bridge_0_wishbone.address
+					.avalon_mm_to_wishbone_bridge_0_wishbone_datain       (wb_datain_w), //                                        .datain
+					.avalon_mm_to_wishbone_bridge_0_wishbone_dataout      (wb_dataout_w),//                                        .dataout
+					.avalon_mm_to_wishbone_bridge_0_wishbone_writeenable  (we_o_w),  		//                                        .writeenable
+					.avalon_mm_to_wishbone_bridge_0_wishbone_selectarray  (sel_o_w),  	//                                        .selectarray
+					.avalon_mm_to_wishbone_bridge_0_wishbone_strobeout    (stb_o_w),    	//                                        .strobeout
+					.avalon_mm_to_wishbone_bridge_0_wishbone_acknowledged	(wb_ack_o_w),	//														.acknowledge
            );
 
-// CZR - Sinais de controle da DPRAM
-wire [31:0] dpram_s2_addr;
-wire dpram_s2_write_en;
-wire [31:0] dpram_s2_readdata;
-wire [31:0] dpram_s2_writedata;
-
-//dpram dpram_instance(
-//	// Common signals
-//	.clk_i(fpga_clk_50),
-//	.rst_i_n(hps_fpga_reset_n),
-////	.clk_i(slow_clk),
-////	.rst_i_n(local_rst_n_w),
-//	// Avalon-MM interface
-//	.write_o (dpram_s2_write_en),
-//	.address_o(dpram_s2_addr),
-//	.readdata_i(dpram_s2_readdata),
-//	.writedata_o(dpram_s2_writedata),
-//	// 4-bit Multiplier interface
-//	.A_o(A_w),
-//	.B_o(B_w),
-//	.mult4_enable_o(en_w),
-//	.Y_i(Y_w),
-//	.calc_end_i(calc_end_w),
-//	// Debug interface
-////	.state_dbg(LED[3:0])
-//);
+// CZR - Sinais do Wishbone
+wire [31:0] wb_address_w;
+wire [31:0] wb_datain_w;
+wire [31:0] wb_dataout_w;
+wire we_o_w;						// Se 1, escrita no barramento
+wire [3:0] sel_o_w;				// Bits selecionando qual dos bytes da palavra vai ser lido
+wire stb_o_w;						// "Chip select"
+wire wb_ack_o_w;					// ??
 
 wire [3:0] A_w;
 wire [3:0] B_w;
@@ -259,13 +241,34 @@ mult4bits mult4bits_inst(
 	.mult_done_o(calc_end_w)
 );
 
-assign LED = Y_w;
+mm_mult mm_mult_inst(
+	// Common signals
+	.clk_i(fpga_clk_50),
+	.rst_i_n(hps_fpga_reset_n),
+	// Avalon-MM Interface
+	.address_i(wb_address_w),
+	.readdata_o(wb_datain_w),
+	.writedata_i(wb_dataout_w),
+	.we_i(we_o_w),
+	.sel_i(sel_o_w),
+	.stb_i(stb_o_w),
+	.ack_i(wb_ack_o_w),
+	
+	// mult4b interface
+	.A_o(A_w),
+	.B_o(B_w),
+	.mult4_enable_o(en_w),
+	.Y_i(Y_w),
+	.calc_end_i(calc_end_w),
+	
+	// Debug
+	.AB_dbg(LED)
+);
+
+//assign LED = Y_w;
 
 reg [24:0] counter;
 reg slow_clk;
-
-wire local_rst_n_w;
-assign local_rst_n_w = hps_fpga_reset_n | KEY[1];
 
 always @(posedge fpga_clk_50) begin
 	if (!KEY[1]) begin
