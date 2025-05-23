@@ -8,3 +8,6 @@ incremental_db/
 
 # Saídas para código em C
 *.o
+
+# Pasta de arquivos em PDF
+PDFs/
