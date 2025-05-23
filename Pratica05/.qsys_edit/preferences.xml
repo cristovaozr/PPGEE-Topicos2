@@ -7,8 +7,7 @@
    <irq preferredWidth="63" />
   </columns>
  </systemtable>
- <library expandedCategories="Library,Project" />
- <window width="1504" height="869" x="123" y="131" />
- <generation block_symbol_file="1" path="_PROJECT_NAME_" />
+ <library expandedCategories="Library,Project/LAB-PDS,Project" />
+ <window width="1820" height="935" x="0" y="69" />
  <hdlexample language="VERILOG" />
 </preferences>

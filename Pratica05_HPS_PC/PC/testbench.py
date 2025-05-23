@@ -8,7 +8,6 @@ Created on Fri Abr 04 11:04:53 2025
 
 import socket
 import struct
-import time
 from tqdm import tqdm
 
 MAGIC_NUMBER = 0xdeadbeef
@@ -20,8 +19,7 @@ if __name__ == "__main__":
 
     print("Executando testbench para todos os números!")
     
-    server_address   = ("192.168.88.105", 9090) 
-    # server_address   = ("192.168.88.108", 9090) 
+    server_address   = ("192.168.26.2", 9090)
     udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     
     passed = True    
@@ -43,8 +41,6 @@ if __name__ == "__main__":
         if prod != Y:
             print(f"Teste falhou em A=={i} e B=={j}: Y=={Y}")
     
-        # time.sleep(.5)
-    
     print()
     if passed:
         print("Sucesso!")
@@ -52,5 +48,3 @@ if __name__ == "__main__":
         print("Algum teste falhou!")        
                                             
     udp_socket.close()
-    
-    

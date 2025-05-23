@@ -1,0 +1,21 @@
+`ifndef MM_MULT_DEFINES_SV_
+`define MM_MULT_DEFINES_SV_
+
+typedef enum logic[3:0] {
+	ST_MM_MULT_IDLE 						= 4'd1,
+	ST_MM_MULT_READ_AB 					= 4'd2,
+	ST_MM_MULT_START_MULTIPLICATION	= 4'd3,
+	ST_MM_MULT_WAIT_FOR_RESULT 		= 4'd4,
+	ST_MM_MULT_STORE_Y 					= 4'd5,
+	ST_MM_MULT_UPDATE_STATUS_1 		= 4'd6,
+	ST_MM_MULT_UPDATE_STATUS_2 		= 4'd7,
+	ST_MM_MULT_WAIT_C0 					= 4'd8,
+	ST_MM_MULT_CLEAR_STATUS 			= 4'd9
+} mm_mult_state_e;
+
+`define MM_MULT_ADDR_CONTROL		0
+`define MM_MULT_ADDR_DATA_IN		1
+`define MM_MULT_ADDR_DATA_OUT		2
+`define MM_MULT_ADDR_STATUS		3
+
+`endif

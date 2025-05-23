@@ -1,19 +1,23 @@
 
 module soc_system (
-	avmm_to_wishbone_bridge_0_wishbone_address,
-	avmm_to_wishbone_bridge_0_wishbone_datain,
-	avmm_to_wishbone_bridge_0_wishbone_dataout,
-	avmm_to_wishbone_bridge_0_wishbone_writeenable,
-	avmm_to_wishbone_bridge_0_wishbone_selectarray,
-	avmm_to_wishbone_bridge_0_wishbone_strobeout,
-	avmm_to_wishbone_bridge_0_wishbone_acknowledged,
 	button_pio_external_connection_export,
 	clk_clk,
 	dipsw_pio_external_connection_export,
+	dualport_ram_clk2_clk,
+	dualport_ram_reset2_reset,
+	dualport_ram_reset2_reset_req,
+	dualport_ram_s2_address,
+	dualport_ram_s2_chipselect,
+	dualport_ram_s2_clken,
+	dualport_ram_s2_write,
+	dualport_ram_s2_readdata,
+	dualport_ram_s2_writedata,
+	dualport_ram_s2_byteenable,
 	hps_0_f2h_cold_reset_req_reset_n,
 	hps_0_f2h_debug_reset_req_reset_n,
 	hps_0_f2h_stm_hw_events_stm_hwevents,
 	hps_0_f2h_warm_reset_req_reset_n,
+	hps_0_h2f_reset_reset_n,
 	hps_0_hps_io_hps_io_emac1_inst_TX_CLK,
 	hps_0_hps_io_hps_io_emac1_inst_TXD0,
 	hps_0_hps_io_hps_io_emac1_inst_TXD1,
@@ -79,22 +83,33 @@ module soc_system (
 	memory_mem_odt,
 	memory_mem_dm,
 	memory_oct_rzqin,
-	reset_reset_n);	
+	reset_reset_n,
+	avalon_mm_to_wishbone_bridge_0_wishbone_address,
+	avalon_mm_to_wishbone_bridge_0_wishbone_datain,
+	avalon_mm_to_wishbone_bridge_0_wishbone_dataout,
+	avalon_mm_to_wishbone_bridge_0_wishbone_writeenable,
+	avalon_mm_to_wishbone_bridge_0_wishbone_selectarray,
+	avalon_mm_to_wishbone_bridge_0_wishbone_strobeout,
+	avalon_mm_to_wishbone_bridge_0_wishbone_acknowledged);	
 
-	output	[4:0]	avmm_to_wishbone_bridge_0_wishbone_address;
-	input	[31:0]	avmm_to_wishbone_bridge_0_wishbone_datain;
-	output	[31:0]	avmm_to_wishbone_bridge_0_wishbone_dataout;
-	output		avmm_to_wishbone_bridge_0_wishbone_writeenable;
-	output	[3:0]	avmm_to_wishbone_bridge_0_wishbone_selectarray;
-	output		avmm_to_wishbone_bridge_0_wishbone_strobeout;
-	input		avmm_to_wishbone_bridge_0_wishbone_acknowledged;
 	input	[1:0]	button_pio_external_connection_export;
 	input		clk_clk;
 	input	[3:0]	dipsw_pio_external_connection_export;
+	input		dualport_ram_clk2_clk;
+	input		dualport_ram_reset2_reset;
+	input		dualport_ram_reset2_reset_req;
+	input	[1:0]	dualport_ram_s2_address;
+	input		dualport_ram_s2_chipselect;
+	input		dualport_ram_s2_clken;
+	input		dualport_ram_s2_write;
+	output	[31:0]	dualport_ram_s2_readdata;
+	input	[31:0]	dualport_ram_s2_writedata;
+	input	[3:0]	dualport_ram_s2_byteenable;
 	input		hps_0_f2h_cold_reset_req_reset_n;
 	input		hps_0_f2h_debug_reset_req_reset_n;
 	input	[27:0]	hps_0_f2h_stm_hw_events_stm_hwevents;
 	input		hps_0_f2h_warm_reset_req_reset_n;
+	output		hps_0_h2f_reset_reset_n;
 	output		hps_0_hps_io_hps_io_emac1_inst_TX_CLK;
 	output		hps_0_hps_io_hps_io_emac1_inst_TXD0;
 	output		hps_0_hps_io_hps_io_emac1_inst_TXD1;
@@ -161,4 +176,11 @@ module soc_system (
 	output	[3:0]	memory_mem_dm;
 	input		memory_oct_rzqin;
 	input		reset_reset_n;
+	output	[0:0]	avalon_mm_to_wishbone_bridge_0_wishbone_address;
+	input	[31:0]	avalon_mm_to_wishbone_bridge_0_wishbone_datain;
+	output	[31:0]	avalon_mm_to_wishbone_bridge_0_wishbone_dataout;
+	output		avalon_mm_to_wishbone_bridge_0_wishbone_writeenable;
+	output	[3:0]	avalon_mm_to_wishbone_bridge_0_wishbone_selectarray;
+	output		avalon_mm_to_wishbone_bridge_0_wishbone_strobeout;
+	input		avalon_mm_to_wishbone_bridge_0_wishbone_acknowledged;
 endmodule

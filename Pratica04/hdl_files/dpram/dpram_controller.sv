@@ -55,7 +55,7 @@ always @(start_i, calc_end_i, c0_i, state) begin
 		end
 		
 		ST_DPRAM_WAIT_C0: begin
-			next_state <= c0_i ? ST_DPRAM_CLEAR_STATUS : ST_DPRAM_CLEAR_STATUS;
+			next_state <= c0_i ? ST_DPRAM_CLEAR_STATUS : ST_DPRAM_WAIT_C0;
 		end
 		
 		ST_DPRAM_CLEAR_STATUS: begin
